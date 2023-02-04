@@ -1,0 +1,9 @@
+.idea/
+tmp/
+venv/
+
+.DS_Store
+*.iml
+ec2-user-data-script-populating-cache.txt
+ec2-user-data-script-benchmark-efs.txt
+ec2-user-data-script-benchmark-fsx.txt

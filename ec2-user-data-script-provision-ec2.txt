@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# Set default region for AWS CLI
+echo '### Set default region for AWS CLI ###'
+REGION=$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
+aws configure set default.region $REGION
+
+# Upgrade packages and install Docker
+echo '### Upgrade packages and install Docker ###'
+DEBIAN_FRONTEND=noninteractive apt update
+DEBIAN_FRONTEND=noninteractive apt upgrade -y
+DEBIAN_FRONTEND=noninteractive apt install -yq awscli docker.io jq
+usermod -aG docker ubuntu
+newgrp docker
+sudo systemctl enable docker
+echo "### $(docker --version) ###"
+
+# Install efs-utils, if you use Amazon EFS as your cache
+echo '### Install efs-utils, if you use Amazon EFS as your cache ###'
+git clone https://github.com/aws/efs-utils
+cd efs-utils
+./build-deb.sh
+DEBIAN_FRONTEND=noninteractive apt install -yq ./build/amazon-efs-utils*deb
+cd ..
+rm -rf efs-utils
+
+# Install OpenZFS client, if you use FSx for OpenZFS as your cache
+echo '### Install OpenZFS client, if you use FSx for OpenZFS as your cache ###'
+DEBIAN_FRONTEND=noninteractive apt install -yq nfs-common
+
+# Build our Docker image
+echo '### Build our Docker image ###'
+cat <<DOCKERFILE >> /home/ubuntu/Dockerfile
+FROM ubuntu:22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y \
+  && apt-get upgrade -y \
+  && apt-get install -y \
+    awscli \
+    lz4 \
+    gawk \
+    wget \
+    git-core \
+    diffstat \
+    unzip \
+    texinfo \
+    gcc-multilib \
+    build-essential \
+    chrpath \
+    socat \
+    cpio \
+    python2 \
+    python3 \
+    python3-pip \
+    python3-pexpect \
+    xz-utils debianutils \
+    iputils-ping \
+    libsdl1.2-dev \
+    xterm \
+    zstd \
+    locales
+
+ENV LANG=en_US.UTF-8
+RUN /usr/sbin/locale-gen en_US.UTF-8
+
+SHELL ["/bin/bash", "-c"]
+
+ENTRYPOINT ["/bin/bash"]
+DOCKERFILE
+
+chown -R ubuntu /home/ubuntu/Dockerfile
+chgrp -R ubuntu /home/ubuntu/Dockerfile
+
+sudo -u ubuntu bash -c 'cd /home/ubuntu; docker build . -t ubuntu-yocto-image'
