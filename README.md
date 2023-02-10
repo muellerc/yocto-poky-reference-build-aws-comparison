@@ -24,6 +24,7 @@
 
 ![efs-200-instances-generalPurpose-elastic-throughput.png](images%2Fefs-200-instances-generalPurpose-elastic-throughput.png)
 
+
 |                                                                               | 1 instance                                                                                      | 10 instances                                                                                     | 100 instances        | 200 instances                                                                                     |
 |-------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|----------------------|---------------------------------------------------------------------------------------------------|
 | EFS (performance mode generalPurpose; throughput mode provisioned 1024 MiB/s) | P0: 99m 33s<br>P50: 99m 50s<br>P75: 99m 59s<br>P90: 100m 04s<br>P98: 100m 07s<br>P100: 100m 08s | P0: 98m 31s<br>P50: 99m 55s<br>P75: 100m 18s<br>P90: 101m 06s<br>P98: 102m 16s<br>P100: 102m 34s | <br><br><br><br><br> | P0: 98m 00s<br>P50: 117m 57s<br>P75: 127m 41s<br>P90: 137m 47s<br>P98: 143m 17s<br>P100: 145m 21s |
@@ -38,6 +39,10 @@
 |-------------------------------------------------------------------------------|----------------------|----------------------|----------------------|-----------------------|
 | EFS (performance mode generalPurpose; throughput mode bursting) | <br><br><br><br><br> | <br><br><br><br><br> | <br><br><br><br><br> | <br><br><br><br><br>  |
 
+![efs-200-instances-generalPurpose-bursting-iops.png](images%2Fefs-200-instances-generalPurpose-bursting-iops.png)
+
+![efs-200-instances-generalPurpose-bursting-throughput.png](images%2Fefs-200-instances-generalPurpose-bursting-throughput.png)
+
 
 
 |                                                                               | 1 instance | 10 instances | 100 instances | 200 instances |
@@ -50,9 +55,15 @@
 
 ![benchmark-FSx-set-up.png](images%2Fbenchmark-FSx-set-up.png)
 
-|                                                                                        | 1 instance                                                                                   | 10 instances                                                                                     | 100 instances                                                                                      | 200 instances                                                                                      |
-|----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
-| FSx (storage-capacity: 64 GB; throughput capacity: 4096; user provisioned Iops: 20000) | P0: 99m 27s<br>P50: 99m 27s<br>P75: 99m 27s<br>P90: 99m 27s<br>P98: 99m 27s<br>P100: 99m 27s | P0: 97m 30s<br>P50: 99m 33s<br>P75: 100m 24s<br>P90: 101m 10s<br>P98: 101m 56s<br>P100: 102m 08s | P0: 101m 30s<br>P50: 139m 09s<br>P75: 149m 36s<br>P90: 160m 03s<br>P98: 164m 43s<br>P100: 167m 40s | P0: 125m 10s<br>P50: 201m 31s<br>P75: 219m 41s<br>P90: 229m 53s<br>P98: 240m 06s<br>P100: 253m 06s |
+|                                                                                         | 1 instance                                                                                   | 10 instances                                                                                     | 100 instances                                                                                      | 200 instances                                                                                      |
+|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| FSx (storage-capacity: 282 GB; throughput capacity: 4096; user provisioned Iops: 20000) | P0: 99m 27s<br>P50: 99m 27s<br>P75: 99m 27s<br>P90: 99m 27s<br>P98: 99m 27s<br>P100: 99m 27s | P0: 97m 30s<br>P50: 99m 33s<br>P75: 100m 24s<br>P90: 101m 10s<br>P98: 101m 56s<br>P100: 102m 08s | P0: 101m 30s<br>P50: 139m 09s<br>P75: 149m 36s<br>P90: 160m 03s<br>P98: 164m 43s<br>P100: 167m 40s | P0: 125m 10s<br>P50: 201m 31s<br>P75: 219m 41s<br>P90: 229m 53s<br>P98: 240m 06s<br>P100: 253m 06s |
+
+![fsx-zfs-200-instances-282-capacity-4096-throughput-20000-iops-iops.png](images%2Ffsx-zfs-200-instances-282-capacity-4096-throughput-20000-iops-iops.png)
+
+![fsx-zfs-200-instances-282-capacity-4096-throughput-20000-iops-throughput.png](images%2Ffsx-zfs-200-instances-282-capacity-4096-throughput-20000-iops-throughput.png)
+
+![fsx-zfs-200-instances-282-capacity-4096-throughput-20000-iops-utilisation.png](images%2Ffsx-zfs-200-instances-282-capacity-4096-throughput-20000-iops-utilisation.png)
 
 
 ## 2 Setup
