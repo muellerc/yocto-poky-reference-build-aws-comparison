@@ -20,14 +20,18 @@
 |-------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
 | EFS (performance mode generalPurpose; throughput mode elastic)                | P0: 98m 27s<br>P50: 98m 41s<br>P75: 98m 48s<br>P90: 98m 52s<br>P98: 98m 54s<br>P100: 98m 55s | P0: 98m 11s<br>P50: 98m 49s<br>P75: 100m 00s<br>P90: 101m 13s<br>P98: 101m 29s<br>P100: 101m 33s | P0: 97m 53s<br>P50: 117m 06s<br>P75: 127m 22s<br>P90: 135m 59s<br>P98: 142m 36s<br>P100: 143m 58s | P0: 104m 34s<br>P50: 170m 45s<br>P75: 184m 57s<br>P90: 197m 21<br>P98: 207m 26s<br>P100: 211m 24 |
 
-![efs-200-instances-iops.png](images%2Fefs-200-instances-iops.png)
+![efs-200-instances-generalPurpose-elastic-iops.png](images%2Fefs-200-instances-generalPurpose-elastic-iops.png)
 
-![efs-200-instances-throughput.png](images%2Fefs-200-instances-throughput.png)
+![efs-200-instances-generalPurpose-elastic-throughput.png](images%2Fefs-200-instances-generalPurpose-elastic-throughput.png)
 
 |                                                                               | 1 instance                                                                                      | 10 instances                                                                                     | 100 instances        | 200 instances                                                                                     |
 |-------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|----------------------|---------------------------------------------------------------------------------------------------|
 | EFS (performance mode generalPurpose; throughput mode provisioned 1024 MiB/s) | P0: 99m 33s<br>P50: 99m 50s<br>P75: 99m 59s<br>P90: 100m 04s<br>P98: 100m 07s<br>P100: 100m 08s | P0: 98m 31s<br>P50: 99m 55s<br>P75: 100m 18s<br>P90: 101m 06s<br>P98: 102m 16s<br>P100: 102m 34s | <br><br><br><br><br> | P0: 98m 00s<br>P50: 117m 57s<br>P75: 127m 41s<br>P90: 137m 47s<br>P98: 143m 17s<br>P100: 145m 21s |
 
+
+![efs-200-instances-generalPurpose-provisioned-1024-iops.png](images%2Fefs-200-instances-generalPurpose-provisioned-1024-iops.png)
+
+![efs-200-instances-generalPurpose-provisioned-1024-throughput.png](images%2Fefs-200-instances-generalPurpose-provisioned-1024-throughput.png)
 
 
 |                                                                               | 1 instance           | 10 instances         | 100 instances        | 200 instances         |
