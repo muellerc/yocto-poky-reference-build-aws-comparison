@@ -35,9 +35,9 @@
 ![efs-200-instances-generalPurpose-provisioned-1024-throughput.png](images%2Fefs-200-instances-generalPurpose-provisioned-1024-throughput.png)
 
 
-|                                                                               | 1 instance           | 10 instances         | 100 instances        | 200 instances         |
-|-------------------------------------------------------------------------------|----------------------|----------------------|----------------------|-----------------------|
-| EFS (performance mode generalPurpose; throughput mode bursting) | <br><br><br><br><br> | <br><br><br><br><br> | <br><br><br><br><br> | <br><br><br><br><br>  |
+|                                                                 | 1 instance                                                                                   | 10 instances                                                                                     | 100 instances                                                                                     | 200 instances                                                                                      |
+|-----------------------------------------------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| EFS (performance mode generalPurpose; throughput mode bursting) | P0: 99m 12s<br>P50: 99m 12s<br>P75: 99m 12s<br>P90: 99m 12s<br>P98: 99m 12s<br>P100: 99m 12s | P0: 97m 55s<br>P50: 99m 26s<br>P75: 100m 03s<br>P90: 101m 38s<br>P98: 102m 57s<br>P100: 103m 42s | P0: 97m 25s<br>P50: 119m 58s<br>P75: 130m 06s<br>P90: 136m 38s<br>P98: 146m 08s<br>P100: 152m 43s | P0: 103m 06s<br>P50: 162m 14s<br>P75: 177m 21s<br>P90: 190m 42s<br>P98: 199m 49s<br>P100: 204m 01s |
 
 ![efs-200-instances-generalPurpose-bursting-iops.png](images%2Fefs-200-instances-generalPurpose-bursting-iops.png)
 
