@@ -1,44 +1,36 @@
+import numpy as np
+
 import os
 import re
 
 pattern = re.compile(r"^real\t(.*)m(.*)s$")
 results = []
-min = 0
-max = 0
-total = 0
 
 for subdir, dirs, files in os.walk("tmp"):
     for file in files:
         fqn = os.path.join(subdir, file)
-        # print(fqn)
 
         if fqn.endswith(".txt"):
             f = open(fqn, "r")
+
             for line in f:
-                # print(line)
                 match = pattern.match(line)
 
                 if match:
-                    # print(match.group())
-                    # print(match.group(1))
-                    # print(match.group(2))
-
                     benchmark_result = int(match.group(1)) * 60 + int(float(match.group(2)))
-                    print(benchmark_result)
                     results.append(benchmark_result)
             f.close()
 
-    for measurement in results:
-        total = total + measurement
+    p0 = np.percentile(results, 0)
+    p50 = np.percentile(results, 50)
+    p75 = np.percentile(results, 75)
+    p90 = np.percentile(results, 90)
+    p98 = np.percentile(results, 98)
+    p100 = np.percentile(results, 100)
 
-        if min == 0 or min > measurement:
-            min = measurement
-
-        if max == 0 or max < measurement:
-            max = measurement
-
-    avg = int(total / len(results))
-    print(str(len(results)) + ' Instances')
-    print('min: ' + str(int(min / 60)) + 'm ' + str(min - (int(min / 60) * 60)) + 's')
-    print('max: ' + str(int(max / 60)) + 'm ' + str(max - (int(max / 60) * 60)) + 's')
-    print('avg: ' + str(int(avg / 60)) + 'm ' + str(avg - (int(avg / 60) * 60)) + 's')
+    print('P0: ' + str(int(p0 / 60)) + 'm ' + str(p0 - (int(p0 / 60) * 60)) + 's')
+    print('P50: ' + str(int(p50 / 60)) + 'm ' + str(p50 - (int(p50 / 60) * 60)) + 's')
+    print('P75: ' + str(int(p75 / 60)) + 'm ' + str(p75 - (int(p75 / 60) * 60)) + 's')
+    print('P90: ' + str(int(p90 / 60)) + 'm ' + str(p90 - (int(p90 / 60) * 60)) + 's')
+    print('P98: ' + str(int(p98 / 60)) + 'm ' + str(p98 - (int(p98 / 60) * 60)) + 's')
+    print('P100: ' + str(int(p100 / 60)) + 'm ' + str(p100 - (int(p100 / 60) * 60)) + 's')
