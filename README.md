@@ -55,9 +55,10 @@
 
 ![benchmark-FSx-set-up.png](images%2Fbenchmark-FSx-set-up.png)
 
-|                                                                                         | 1 instance                                                                                   | 10 instances                                                                                     | 50 instances                                                                                      | 100 instances                                                                                      | 200 instances                                                                                      |
-|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
-| FSx (storage-capacity: 282 GB; throughput capacity: 4096; user provisioned Iops: 20000) | P0: 99m 27s<br>P50: 99m 27s<br>P75: 99m 27s<br>P90: 99m 27s<br>P98: 99m 27s<br>P100: 99m 27s | P0: 97m 30s<br>P50: 99m 33s<br>P75: 100m 24s<br>P90: 101m 10s<br>P98: 101m 56s<br>P100: 102m 08s | P0: 99m 15s<br>P50: 104m 55s<br>P75: 107m 54s<br>P90: 117m 28s<br>P98: 129m 03s<br>P100: 129m 04s | P0: 101m 30s<br>P50: 139m 09s<br>P75: 149m 36s<br>P90: 160m 03s<br>P98: 164m 43s<br>P100: 167m 40s | P0: 125m 10s<br>P50: 201m 31s<br>P75: 219m 41s<br>P90: 229m 53s<br>P98: 240m 06s<br>P100: 253m 06s |
+|                                                                                                                          | 1 instance                                                                                   | 10 instances                                                                                     | 50 instances                                                                                      | 100 instances                                                                                      | 200 instances                                                                                      |
+|--------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| FSx (storage-capacity: 282 GB; throughput capacity: 4096; user provisioned Iops: 20000)                                  | P0: 99m 27s<br>P50: 99m 27s<br>P75: 99m 27s<br>P90: 99m 27s<br>P98: 99m 27s<br>P100: 99m 27s | P0: 97m 30s<br>P50: 99m 33s<br>P75: 100m 24s<br>P90: 101m 10s<br>P98: 101m 56s<br>P100: 102m 08s | P0: 99m 15s<br>P50: 104m 55s<br>P75: 107m 54s<br>P90: 117m 28s<br>P98: 129m 03s<br>P100: 129m 04s | P0: 101m 30s<br>P50: 139m 09s<br>P75: 149m 36s<br>P90: 160m 03s<br>P98: 164m 43s<br>P100: 167m 40s | P0: 125m 10s<br>P50: 201m 31s<br>P75: 219m 41s<br>P90: 229m 53s<br>P98: 240m 06s<br>P100: 253m 06s |
+| FSx (storage-capacity: 256 GB; throughput capacity: 4096; user provisioned Iops: 20000) - all instances & FSx in same AZ | <br><br><br><br><br>                                                                         | <br><br><br><br><br>                                                                             | <br><br><br><br><br>                                                                              | <br><br><br><br><br>                                                                               | P0: 114m 18s<br>P50: 206m 41s<br>P75: 226m 48s<br>P90: 241m 40s<br>P98: 254m 29s<br>P100: 263m 53s |
 
 ![fsx-zfs-200-instances-282-capacity-4096-throughput-20000-iops-iops.png](images%2Ffsx-zfs-200-instances-282-capacity-4096-throughput-20000-iops-iops.png)
 
@@ -150,7 +151,7 @@ aws fsx create-file-system \
     --file-system-type OPENZFS \
     --storage-capacity 256 \
     --storage-type SSD \
-    --subnet-ids $SUBNET_1_ID \
+    --subnet-ids $SUBNET_3_ID \
     --security-group-ids $SECURITY_GROUP_ID \
     --open-zfs-configuration "DeploymentType=SINGLE_AZ_1,ThroughputCapacity=4096,RootVolumeConfiguration={DataCompressionType=LZ4},DiskIopsConfiguration={Mode=USER_PROVISIONED,Iops=20000}" \
     --tags Key=Name,Value=Yocto-Poky-Storage-Benchmark-FSX-Open-ZFS Key=owner,Value=cmr \
@@ -522,7 +523,7 @@ aws ec2 run-instances \
     --ebs-optimized \
     --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=20,VolumeType=gp3}' 'DeviceName=/dev/sdf,Ebs={VolumeSize=20,VolumeType=gp3,Encrypted=true}' \
     --instance-initiated-shutdown-behavior 'terminate' \
-    --count 10 \
+    --count 1 \
     --user-data file://ec2-user-data-script-populating-cache.txt \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Yocto-Poky-Storage-Benchmark-EFS-and-FSx-Population},{Key=owner,Value=cmr}]' \
     | jq '.'
@@ -746,7 +747,7 @@ aws ec2 run-instances \
     --ebs-optimized \
     --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=20,VolumeType=gp3}' 'DeviceName=/dev/sdf,Ebs={VolumeSize=100,VolumeType=gp3,Encrypted=true}' \
     --instance-initiated-shutdown-behavior 'terminate' \
-    --count 50 \
+    --count 200 \
     --user-data file://ec2-user-data-script-benchmark-fsx.txt \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Yocto-Poky-Storage-Benchmark-FSx},{Key=owner,Value=cmr}]' \
     | jq '.'
