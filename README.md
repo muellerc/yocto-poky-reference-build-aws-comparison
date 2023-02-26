@@ -6,10 +6,10 @@
 
 ![benchmark-EBS-set-up.png](images%2Fbenchmark-EBS-set-up.png)
 
-|           | 1 instance                                                                                      | 10 instances | 100 instances | 200 instances |
-|-----------|-------------------------------------------------------------------------------------------------|--------------|---------------|---------------|
-| EBS (gp3) | P0: 97m 42s<br>P50: 99m 35s<br>P75: 99m 48s<br>P90: 101m 17s<br>P98: 101m 37s<br>P100: 101m 42s | -            | -             | -             |
-| EBS (io2) | P0: 97m 48s<br>P50: 98m 38s<br>P75: 99m 59s<br>P90: 105m 18s<br>P98: 105m 58s<br>P100: 106m 08s | -            | -             | -             |
+|           | 1 instance                                                                                      | 10 instances | 100 instances | 200 instances                                                                                    |
+|-----------|-------------------------------------------------------------------------------------------------|--------------|---------------|--------------------------------------------------------------------------------------------------|
+| EBS (gp3) | P0: 97m 42s<br>P50: 99m 35s<br>P75: 99m 48s<br>P90: 101m 17s<br>P98: 101m 37s<br>P100: 101m 42s | -            | -             | P0: 97m 24s<br>P50: 99m 33s<br>P75: 101m 16s<br>P90: 102m 50s<br>P98: 106m 02s<br>P100: 112m 33s |
+| EBS (io2) | P0: 97m 48s<br>P50: 98m 38s<br>P75: 99m 59s<br>P90: 105m 18s<br>P98: 105m 58s<br>P100: 106m 08s | -            | -             | -                                                                                                |
 
 
 ### 1.2 Amazon EFS
@@ -407,7 +407,7 @@ aws ec2 run-instances \
     --ebs-optimized \
     --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=20,VolumeType=gp3}' 'DeviceName=/dev/sdf,Ebs={VolumeSize=200,VolumeType=gp3,Encrypted=true}' \
     --instance-initiated-shutdown-behavior 'terminate' \
-    --count 9 \
+    --count 200 \
     --user-data file://ec2-user-data-script-benchmark-ebs.txt \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Yocto-Poky-Storage-Benchmark-EBS},{Key=owner,Value=cmr}]' \
     | jq '.'
