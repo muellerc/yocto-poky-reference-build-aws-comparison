@@ -385,7 +385,9 @@ egrep '^real.+s$' /var/log/cloud-init-output.log | tail -1 > benchmark.txt
 aws s3 cp \
     --region eu-central-1 \
     benchmark.txt s3://$S3_BUCKET_NAME/ebs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID-benchmark.txt
-
+aws s3 cp \
+    --region eu-central-1 \
+    /var/log/cloud-init-output.log s3://$S3_BUCKET_NAME/logs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID-cloud-init-output.log
 
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
@@ -621,7 +623,9 @@ egrep '^real.+s$' /var/log/cloud-init-output.log | tail -1 > benchmark.txt
 aws s3 cp \
     --region eu-central-1 \
     benchmark.txt s3://$S3_BUCKET_NAME/efs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID-benchmark.txt
-
+aws s3 cp \
+    --region eu-central-1 \
+    /var/log/cloud-init-output.log s3://$S3_BUCKET_NAME/logs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID-cloud-init-output.log
 
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
@@ -726,7 +730,9 @@ egrep '^real.+s$' /var/log/cloud-init-output.log | tail -1 > benchmark.txt
 aws s3 cp \
     --region eu-central-1 \
     benchmark.txt s3://$S3_BUCKET_NAME/fsx/\$EC2_INSTANCE_ID-\$EC2_AZ_ID-benchmark.txt
-
+aws s3 cp \
+    --region eu-central-1 \
+    /var/log/cloud-init-output.log s3://$S3_BUCKET_NAME/logs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID-cloud-init-output.log
 
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
