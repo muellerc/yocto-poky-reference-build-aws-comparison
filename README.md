@@ -513,6 +513,15 @@ sudo -u ubuntu bash -c 'cd ~; docker run --user 1000 --entrypoint /workspace/pop
 
 echo '### Running the Docker image to populate the FSx for OpenZFS cache ###'
 sudo -u ubuntu bash -c 'cd ~; docker run --user 1000 --entrypoint /workspace/populate-cache.sh -v /workspace/build:/workspace -v /workspace/tmp:/tmp -v /cache-fsx-zfs:/cache ubuntu-yocto-image'
+
+# Shutting down the EC2 instance, after the work is done
+echo '### Shutting down the EC2 instance, after the work is done ###'
+EC2_INSTANCE_ID=\$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .instanceId)
+REGION=$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
+aws configure set default.region \$REGION
+aws ec2 terminate-instances \
+    --region \$REGION \
+    --instance-id \$EC2_INSTANCE_ID
 EOF
 ```
 
@@ -531,34 +540,10 @@ aws ec2 run-instances \
     --user-data file://ec2-user-data-script-populating-cache.txt \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Yocto-Poky-Storage-Benchmark-EFS-and-FSx-Population},{Key=owner,Value=cmr}]' \
     | jq '.'
-    
-EC2_CACHE_POPULATION_INSTANCE_ID=$(aws ec2 describe-instances \
-    --region eu-central-1 \
-    --output json \
-    | jq -r '.Reservations | .[].Instances[] | select(.Tags[].Value == "Yocto-Poky-Storage-Benchmark-EFS-and-FSx-Population") | .InstanceId')
-
-echo "EC2 cache population image id is: $EC2_CACHE_POPULATION_INSTANCE_ID"
 ```
 
 The cache population will take around 20 minutes (around 10 minutes per file system), as we download all required dependencies for this build.
-To verify the cache population finished, we can SSH into the EC2 instance to check:
-
-```bash
-EC2_CACHE_POPULATION_INSTANCE_PUBLIC_DNS_NAME=$(aws ec2 describe-instances \
-    --region eu-central-1 \
-    --output json \
-    | jq -r '.Reservations | .[].Instances[] | select(.Tags[].Value == "Yocto-Poky-Storage-Benchmark-EFS-and-FSx-Population") | .NetworkInterfaces[0].PrivateIpAddresses[0].Association.PublicDnsName')
-
-ssh -o "ServerAliveInterval 60" -i "~/$SSH_KEY_PAIR_NAME.pem" ubuntu@$EC2_CACHE_POPULATION_INSTANCE_PUBLIC_DNS_NAME
-
-tail -f /var/log/cloud-init-output.log
-```
-
-If you should see a similar line like below, the cache population is done. Otherwise, wait a few more minutes:
-
-```
-Cloud-init v. 22.4.2-0ubuntu0~22.04.1 finished at 
-```
+The instance will terminate automatically, once it's done.
 
 
 ## 8 Run the benchmark with 100% cache hit for EFS
@@ -693,7 +678,7 @@ chgrp -R ubuntu /workspace
 # Mount the FSx file system
 echo '### Mount the FSx file system ###'
 mkdir -p /cache-fsx-zfs
-mount -t nfs -o nfsvers=3 $FSX_FILE_SYSTEM_ID.fsx.eu-central-1.amazonaws.com:/fsx /cache-fsx-zfs
+mount -t nfs -o nfsvers=3,noatime,wsize=1048576,rsize=1048576,nolock $FSX_FILE_SYSTEM_ID.fsx.eu-central-1.amazonaws.com:/fsx /cache-fsx-zfs
 echo "$FSX_FILE_SYSTEM_ID.fsx.eu-central-1.amazonaws.com:/fsx/ /cache-fsx-zfs nfs nfsver=3 defaults 0 0" | sudo tee --append  /etc/fstab
 # ownership from a FSx file system cannot be changed, but user ubuntu can read/write from/to it
 
@@ -773,6 +758,7 @@ ssh -o "ServerAliveInterval 60" -i "~/$SSH_KEY_PAIR_NAME.pem" ubuntu@$EC2_FSX_BE
 
 tail -f /var/log/cloud-init-output.log
 ```
+
 
 ## 6 Analyse the benchmark result
 
