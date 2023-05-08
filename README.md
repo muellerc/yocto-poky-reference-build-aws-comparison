@@ -16,9 +16,10 @@
 
 ![benchmark-EFS-set-up.png](images%2Fbenchmark-EFS-set-up.png)
 
-|                                                                               | 1 instance                                                                                   | 10 instances                                                                                     | 50 instances                                                                                     | 100 instances                                                                                     | 200 instances                                                                                    |
-|-------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| EFS (performance mode generalPurpose; throughput mode elastic)                | P0: 98m 27s<br>P50: 98m 41s<br>P75: 98m 48s<br>P90: 98m 52s<br>P98: 98m 54s<br>P100: 98m 55s | P0: 98m 11s<br>P50: 98m 49s<br>P75: 100m 00s<br>P90: 101m 13s<br>P98: 101m 29s<br>P100: 101m 33s | P0: 98m 57s<br>P50: 103m 30s<br>P75: 105m 33s<br>P90: 109m 33s<br>P98: 119m 12s<br>P100: 119m 41 | P0: 97m 53s<br>P50: 117m 06s<br>P75: 127m 22s<br>P90: 135m 59s<br>P98: 142m 36s<br>P100: 143m 58s | P0: 104m 34s<br>P50: 170m 45s<br>P75: 184m 57s<br>P90: 197m 21<br>P98: 207m 26s<br>P100: 211m 24 |
+|                                                                            | 1 instance                                                                                   | 10 instances                                                                                     | 50 instances                                                                                      | 100 instances                                                                                     | 200 instances                                                                                      |
+|----------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| 05.02.2023: EFS (performance mode generalPurpose; throughput mode elastic) | P0: 98m 27s<br>P50: 98m 41s<br>P75: 98m 48s<br>P90: 98m 52s<br>P98: 98m 54s<br>P100: 98m 55s | P0: 98m 11s<br>P50: 98m 49s<br>P75: 100m 00s<br>P90: 101m 13s<br>P98: 101m 29s<br>P100: 101m 33s | P0: 98m 57s<br>P50: 103m 30s<br>P75: 105m 33s<br>P90: 109m 33s<br>P98: 119m 12s<br>P100: 119m 41s | P0: 97m 53s<br>P50: 117m 06s<br>P75: 127m 22s<br>P90: 135m 59s<br>P98: 142m 36s<br>P100: 143m 58s | P0: 104m 34s<br>P50: 170m 45s<br>P75: 184m 57s<br>P90: 197m 21s<br>P98: 207m 26s<br>P100: 211m 24s |
+| 07.05.2023: EFS (performance mode generalPurpose; throughput mode elastic) |                                                                                              | P0: 96m 54s<br>P50: 97m 54s<br>P75: 98m 57s<br>P90: 99m 12s<br>P98: 100m 03s<br>P100: 100m 16s   | P0: 97m 08s<br>P50: 101m 58s<br>P75: 104m 28s<br>P90: 112m 00s<br>P98: 115m 04s<br>P100: 115m 20s | P0: 98m 11s<br>P50: 114m 45s<br>P75: 130m 04s<br>P90: 136m 37s<br>P98: 141m 56s<br>P100: 143m 38s |                                                                                                    |
 
 ![efs-200-instances-generalPurpose-elastic-iops.png](images%2Fefs-200-instances-generalPurpose-elastic-iops.png)
 
@@ -79,6 +80,8 @@ Following setup was selected:
 Store some parameters as environment variables, to make the life a bit easier when running the commands. Replace <REPLACE ME> with the parameters of your environment:
 
 ```bash
+AWS_REGION=<REPLACE ME>
+
 # this is the SSH key name we provision the Amazon EC2 instances with, in case you want to SSH into the instance (e.g. to troubleshoot an issue)
 SSH_KEY_PAIR_NAME=<REPLACE ME>
 
@@ -102,7 +105,7 @@ SECURITY_GROUP_ID=<REPLACE ME>
 We create an Amazon EFS file system with `generalPurpose` performance mode and `elastic` throughput mode and the corresponding mount points in each availability zone. To benchmark other performance and throughput mode configurations, modify these parameters or set-up another file system: 
 ```bash
 aws efs create-file-system \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --encrypted \
     --performance-mode generalPurpose \
@@ -112,14 +115,14 @@ aws efs create-file-system \
     | jq "."
 
 EFS_FILE_SYSTEM_ID=$(aws efs describe-file-systems \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     | jq -r '.FileSystems | .[] | select(.Name == "Yocto-Poky-Storage-Benchmark-EFS-General-Purpose") | .FileSystemId')
 
 echo "EFS file system id is: $EFS_FILE_SYSTEM_ID"
 
 aws efs create-mount-target \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --file-system-id $EFS_FILE_SYSTEM_ID \
     --subnet-id $SUBNET_1_ID \
@@ -127,7 +130,7 @@ aws efs create-mount-target \
     | jq '.'
 
 aws efs create-mount-target \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --file-system-id $EFS_FILE_SYSTEM_ID \
     --subnet-id $SUBNET_2_ID \
@@ -135,7 +138,7 @@ aws efs create-mount-target \
     | jq '.'
 
 aws efs create-mount-target \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --file-system-id $EFS_FILE_SYSTEM_ID \
     --subnet-id $SUBNET_3_ID \
@@ -148,7 +151,7 @@ aws efs create-mount-target \
 We create the Amazon FSx for Open ZFS file system with `256` GB storage capacity, `4096` throughput capacity and provisioned Iops of `20000`.:
 ```bash
 aws fsx create-file-system \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --file-system-type OPENZFS \
     --storage-capacity 1024 \
@@ -160,7 +163,7 @@ aws fsx create-file-system \
     | jq '.'
 
 FSX_FILE_SYSTEM_ID=$(aws fsx describe-file-systems \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     | jq -r '.FileSystems | .[] | select(.Tags[].Value == "Yocto-Poky-Storage-Benchmark-FSX-Open-ZFS") | .FileSystemId')
 
@@ -175,16 +178,17 @@ Beside installing some Linux utilities and Docker, we also build our Docker imag
 
 ```bash
 UBUNTU_BASE_AMI=$(aws ec2 describe-images \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output text \
     --owners amazon \
     --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*" \
     --query 'sort_by(Images,&CreationDate)[-1].ImageId')
 
 aws ec2 run-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --image-id $UBUNTU_BASE_AMI \
+    --subnet-id $SUBNET_ID \
     --instance-type 'm6i.4xlarge' \
     --key-name $SSH_KEY_PAIR_NAME \
     --ebs-optimized \
@@ -196,7 +200,8 @@ aws ec2 run-instances \
     | jq '.'
 
 EC2_INSTANCE_ID=$(aws ec2 describe-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
+    --filters Name=instance-state-name,Values=running \
     --output json \
     | jq -r '.Reservations | .[].Instances[] | select(.Tags[].Value == "Yocto-Poky-Storage-Benchmark-AMI") | .InstanceId')
 
@@ -209,9 +214,12 @@ To verify the container creation finished, SSH into the EC2 instance:
 
 ```bash
 EC2_INSTANCE_PUBLIC_DNS_NAME=$(aws ec2 describe-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
+    --filters Name=instance-state-name,Values=running \
     --output json \
     | jq -r '.Reservations | .[].Instances[] | select(.Tags[].Value == "Yocto-Poky-Storage-Benchmark-AMI") | .NetworkInterfaces[0].PrivateIpAddresses[0].Association.PublicDnsName')
+
+echo "EC2 instance public DNS name is: $EC2_INSTANCE_PUBLIC_DNS_NAME"
 
 ssh -o "ServerAliveInterval 60" -i "~/$SSH_KEY_PAIR_NAME.pem" ubuntu@$EC2_INSTANCE_PUBLIC_DNS_NAME
 
@@ -231,7 +239,7 @@ Type `exit` to leave the EC2 instance again.
 After the instance is initialized, we will create a custom AMI based on it:
 ```bash
 aws ec2 create-image \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --instance-id $EC2_INSTANCE_ID \
     --name "Ubuntu-22.04-Yocto-Poky-Storage-Benchmark-AMI" \
@@ -241,6 +249,7 @@ aws ec2 create-image \
     | jq -r '.'
 
 EC2_IMAGE_ID=$(aws ec2 describe-images \
+    --region $AWS_REGION \
     --owners self \
     | jq -r '.Images[] | select(.Name == "Ubuntu-22.04-Yocto-Poky-Storage-Benchmark-AMI") | .ImageId')
 
@@ -250,14 +259,14 @@ echo "EC2 image id is: $EC2_IMAGE_ID"
 Let's wait until the creation of this AMI finished (the CLI call will block, until the image becomes available):
 ```bash
 aws ec2 wait image-available \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --image-ids $EC2_IMAGE_ID
 ```
 
 Afterwards, terminate the EC2 instance, as we don't need it anymore:
 ```bash
 aws ec2 terminate-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --instance-id $EC2_INSTANCE_ID \
     | jq '.'
@@ -270,34 +279,34 @@ Now create the necessary IAM role and instance profile, we need to run the bench
 
 ```bash
 aws iam create-role \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --role-name EC2-Yocto-Poky-Benchmark-Role \
     --assume-role-policy-document file://trust-policy.json \
     | jq '.'
 
 aws iam attach-role-policy \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --role-name EC2-Yocto-Poky-Benchmark-Role \
     --policy-arn arn:aws:iam::aws:policy/AdministratorAccess \
     | jq '.'
 
 aws iam create-instance-profile \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --instance-profile-name storage-access-ec2-instance-profile \
     | jq '.'
 
 EC2_INSTANCE_PROFILE_ARN=$(aws iam list-instance-profiles \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     | jq -r '.InstanceProfiles[] | select(.InstanceProfileName == "storage-access-ec2-instance-profile") | .Arn')
 
 echo "EC2 instance profile ARN is: $EC2_INSTANCE_PROFILE_ARN"
 
 aws iam add-role-to-instance-profile \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --role-name EC2-Yocto-Poky-Benchmark-Role \
     --instance-profile-name storage-access-ec2-instance-profile \
@@ -393,7 +402,7 @@ aws s3 cp \
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
 aws ec2 terminate-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --instance-id \$EC2_INSTANCE_ID
 EOF
 ```
@@ -402,7 +411,7 @@ When we run the benchmark, we can configure how many instances we run in paralle
 
 ```bash
 aws ec2 run-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --image-id $EC2_IMAGE_ID \
     --instance-type 'm6i.4xlarge' \
     --key-name $SSH_KEY_PAIR_NAME \
@@ -420,7 +429,7 @@ If you want to check the progress of thr benchmark, you can SSH into the instanc
 
 ```bash
 EC2_EBS_BENCHMARK_INSTANCE_PUBLIC_DNS_NAME=$(aws ec2 describe-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     | jq -r '.Reservations | .[].Instances[] | select(.Tags[].Value == "Yocto-Poky-Storage-Benchmark-EBS") | .NetworkInterfaces[0].PrivateIpAddresses[0].Association.PublicDnsName')
 
@@ -433,7 +442,7 @@ To run the benchmark with an EBS io2 volume with 3000 IOPS configured (for gp3 3
 
 ```bash
 aws ec2 run-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --image-id $EC2_IMAGE_ID \
     --instance-type 'm6i.4xlarge' \
     --key-name $SSH_KEY_PAIR_NAME \
@@ -479,8 +488,8 @@ chgrp -R ubuntu /cache-efs
 # Mount the FSx file system
 echo '### Mount the FSx file system ###'
 mkdir -p /cache-fsx-zfs
-mount -t nfs -o nfsvers=3 $FSX_FILE_SYSTEM_ID.fsx.eu-central-1.amazonaws.com:/fsx/ /cache-fsx-zfs
-echo "$FSX_FILE_SYSTEM_ID.fsx.eu-central-1.amazonaws.com:/fsx/ /cache-fsx-zfs nfs nfsver=3 defaults 0 0" | sudo tee --append  /etc/fstab
+mount -t nfs -o nfsvers=3 $FSX_FILE_SYSTEM_ID.fsx.$AWS_REGION.amazonaws.com:/fsx/ /cache-fsx-zfs
+echo "$FSX_FILE_SYSTEM_ID.fsx.$AWS_REGION.amazonaws.com:/fsx/ /cache-fsx-zfs nfs nfsver=3 defaults 0 0" | sudo tee --append  /etc/fstab
 # ownership from a FSx file system cannot be changed, but user ubuntu can read/write from/to it
 
 
@@ -517,7 +526,7 @@ sudo -u ubuntu bash -c 'cd ~; docker run --user 1000 --entrypoint /workspace/pop
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
 EC2_INSTANCE_ID=\$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .instanceId)
-REGION=$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
+REGION=\$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
 aws configure set default.region \$REGION
 aws ec2 terminate-instances \
     --region \$REGION \
@@ -527,16 +536,16 @@ EOF
 
 ```bash
 aws ec2 run-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     --image-id $EC2_IMAGE_ID \
+    --subnet-id $SUBNET_ID \
     --instance-type 'm6i.4xlarge' \
     --key-name $SSH_KEY_PAIR_NAME \
     --iam-instance-profile Arn=$EC2_INSTANCE_PROFILE_ARN \
     --ebs-optimized \
     --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=20,VolumeType=gp3}' 'DeviceName=/dev/sdf,Ebs={VolumeSize=20,VolumeType=gp3,Encrypted=true}' \
     --instance-initiated-shutdown-behavior 'terminate' \
-    --count 1 \
     --user-data file://ec2-user-data-script-populating-cache.txt \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Yocto-Poky-Storage-Benchmark-EFS-and-FSx-Population},{Key=owner,Value=cmr}]' \
     | jq '.'
@@ -616,7 +625,7 @@ aws s3 cp \
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
 aws ec2 terminate-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --instance-id \$EC2_INSTANCE_ID
 EOF
 ```
@@ -625,8 +634,9 @@ When we start the instance, we can configure how many instances we run in parall
 
 ```bash
 aws ec2 run-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --image-id $EC2_IMAGE_ID \
+    --subnet-id $SUBNET_ID \
     --instance-type 'm6i.4xlarge' \
     --key-name $SSH_KEY_PAIR_NAME \
     --iam-instance-profile Arn=$EC2_INSTANCE_PROFILE_ARN \
@@ -641,9 +651,9 @@ aws ec2 run-instances \
 
 If you want to check the progress of a single benchmark, you can SSH into the instance and tail the `cloud-init-output.log` log file:
 
-```
+```bash
 EC2_EFS_BENCHMARK_INSTANCE_PUBLIC_DNS_NAME=$(aws ec2 describe-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     | jq -r '.Reservations | .[].Instances[] | select(.Tags[].Value == "Yocto-Poky-Storage-Benchmark-EFS") | .NetworkInterfaces[0].PrivateIpAddresses[0].Association.PublicDnsName')
 
@@ -678,8 +688,8 @@ chgrp -R ubuntu /workspace
 # Mount the FSx file system
 echo '### Mount the FSx file system ###'
 mkdir -p /cache-fsx-zfs
-mount -t nfs -o nfsvers=3,noatime,wsize=1048576,rsize=1048576,nolock $FSX_FILE_SYSTEM_ID.fsx.eu-central-1.amazonaws.com:/fsx /cache-fsx-zfs
-echo "$FSX_FILE_SYSTEM_ID.fsx.eu-central-1.amazonaws.com:/fsx/ /cache-fsx-zfs nfs nfsver=3 defaults 0 0" | sudo tee --append  /etc/fstab
+mount -t nfs -o nfsvers=3,noatime,wsize=1048576,rsize=1048576,nolock $FSX_FILE_SYSTEM_ID.fsx.$AWS_REGION.amazonaws.com:/fsx /cache-fsx-zfs
+echo "$FSX_FILE_SYSTEM_ID.fsx.$AWS_REGION.amazonaws.com:/fsx/ /cache-fsx-zfs nfs nfsver=3 defaults 0 0" | sudo tee --append  /etc/fstab
 # ownership from a FSx file system cannot be changed, but user ubuntu can read/write from/to it
 
 
@@ -723,7 +733,7 @@ aws s3 cp \
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
 aws ec2 terminate-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --instance-id \$EC2_INSTANCE_ID
 EOF
 ```
@@ -732,7 +742,7 @@ When we start the instance, we can configure how many instances we run in parall
 
 ```bash
 aws ec2 run-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --image-id $EC2_IMAGE_ID \
     --instance-type 'm6i.4xlarge' \
     --key-name $SSH_KEY_PAIR_NAME \
@@ -750,7 +760,7 @@ If you want to check the progress of a single benchmark, you can SSH into the in
 
 ```bash
 EC2_FSX_BENCHMARK_INSTANCE_PUBLIC_DNS_NAME=$(aws ec2 describe-instances \
-    --region eu-central-1 \
+    --region $AWS_REGION \
     --output json \
     | jq -r '.Reservations | .[].Instances[] | select(.Tags[].Value == "Yocto-Poky-Storage-Benchmark-FSx") | .NetworkInterfaces[0].PrivateIpAddresses[0].Association.PublicDnsName')
 
