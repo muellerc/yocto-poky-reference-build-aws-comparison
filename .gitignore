@@ -8,3 +8,4 @@ ec2-user-data-script-populating-cache.txt
 ec2-user-data-script-benchmark-ebs.txt
 ec2-user-data-script-benchmark-efs.txt
 ec2-user-data-script-benchmark-fsx.txt
+README-CMR.md
