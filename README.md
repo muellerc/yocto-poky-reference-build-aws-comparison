@@ -181,7 +181,7 @@ echo "EC2 instance public DNS name is: $EC2_INSTANCE_PUBLIC_DNS_NAME"
 
 ssh -o "ServerAliveInterval 60" -i "~/$SSH_KEY_PAIR_NAME.pem" ubuntu@$EC2_INSTANCE_PUBLIC_DNS_NAME
 
-docker images
+sudo docker images
 ```
 
 You should see the container `ubuntu-yocto-image` created.
@@ -358,6 +358,12 @@ aws s3 cp \
 aws s3 cp \
     --region $AWS_REGION \
     /var/log/cloud-init-output.log s3://$S3_BUCKET_NAME/logs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID-cloud-init-output.log
+
+# Uploading the sysstat metrics to S3
+echo '### Uploading the sysstat metrics to S3 ###'
+aws s3 cp \
+    --region $AWS_REGION \
+    /var/log/sysstat/* s3://$S3_BUCKET_NAME/logs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID/
 
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
@@ -598,6 +604,12 @@ aws s3 cp \
     --region $AWS_REGION \
     /var/log/cloud-init-output.log s3://$S3_BUCKET_NAME/logs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID-cloud-init-output.log
 
+# Uploading the sysstat metrics to S3
+echo '### Uploading the sysstat metrics to S3 ###'
+aws s3 cp \
+    --region $AWS_REGION \
+    /var/log/sysstat/* s3://$S3_BUCKET_NAME/logs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID/
+
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
 aws ec2 terminate-instances \
@@ -620,7 +632,7 @@ aws ec2 run-instances \
     --ebs-optimized \
     --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=20,VolumeType=gp3}' 'DeviceName=/dev/sdf,Ebs={VolumeSize=100,VolumeType=gp3,Encrypted=true}' \
     --instance-initiated-shutdown-behavior 'terminate' \
-    --count 10 \
+    --count 1 \
     --user-data file://ec2-user-data-script-benchmark-efs.txt \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Yocto-Poky-Storage-Benchmark-EFS},{Key=owner,Value=cmr}]' \
     | jq '.'
@@ -709,6 +721,12 @@ aws s3 cp \
     --region $AWS_REGION \
     /var/log/cloud-init-output.log s3://$S3_BUCKET_NAME/logs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID-cloud-init-output.log
 
+# Uploading the sysstat metrics to S3
+echo '### Uploading the sysstat metrics to S3 ###'
+aws s3 cp \
+    --region $AWS_REGION \
+    /var/log/sysstat/* s3://$S3_BUCKET_NAME/logs/\$EC2_INSTANCE_ID-\$EC2_AZ_ID/
+
 # Shutting down the EC2 instance, after the work is done
 echo '### Shutting down the EC2 instance, after the work is done ###'
 aws ec2 terminate-instances \
@@ -729,7 +747,7 @@ aws ec2 run-instances \
     --ebs-optimized \
     --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=20,VolumeType=gp3}' 'DeviceName=/dev/sdf,Ebs={VolumeSize=100,VolumeType=gp3,Encrypted=true}' \
     --instance-initiated-shutdown-behavior 'terminate' \
-    --count 10 \
+    --count 1 \
     --user-data file://ec2-user-data-script-benchmark-fsx.txt \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Yocto-Poky-Storage-Benchmark-FSx},{Key=owner,Value=cmr}]' \
     | jq '.'

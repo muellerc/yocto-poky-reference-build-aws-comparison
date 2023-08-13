@@ -5,15 +5,28 @@ echo '### Set default region for AWS CLI ###'
 REGION=$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
 aws configure set default.region $REGION
 
-# Upgrade packages and install Docker
+# Upgrade packages and install Docker, AWS CLI, JQ and the sysstat utility
 echo '### Upgrade packages and install Docker ###'
 DEBIAN_FRONTEND=noninteractive apt update
 DEBIAN_FRONTEND=noninteractive apt upgrade -y
-DEBIAN_FRONTEND=noninteractive apt install -yq awscli docker.io jq
+DEBIAN_FRONTEND=noninteractive apt install -yq awscli docker.io jq sysstat
+
 usermod -aG docker ubuntu
 newgrp docker
 sudo systemctl enable docker
 echo "### $(docker --version) ###"
+
+# Configure sysstat
+systemctl enable --now sysstat
+# use `-S XALL' to collect all available statistics.
+sed -i 's|SADC_OPTIONS=\"-S DISK\"|SADC_OPTIONS=\"-S XALL\"|' /etc/sysstat/sysstat
+# disable reports generation
+sed -i 's|#REPORTS=false|REPORTS=false|' /etc/sysstat/sysstat
+# Activates activity collector every 1 minute
+sed -i -e 's|10 minutes|1 minute|' -e 's|OnCalendar=\*:00/10|OnCalendar=\*:00/1|' /usr/lib/systemd/system/sysstat-collect.timer
+# collect data at a second precition
+sed -i 's|sa1 1 1|sa1 1 60|' /usr/lib/systemd/system/sysstat-collect.service
+systemctl daemon-reload
 
 # Install efs-utils, if you use Amazon EFS as your cache
 echo '### Install efs-utils, if you use Amazon EFS as your cache ###'
