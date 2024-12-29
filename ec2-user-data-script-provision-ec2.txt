@@ -9,14 +9,15 @@ aws configure set default.region $REGION
 echo '### Upgrade packages and install Docker ###'
 DEBIAN_FRONTEND=noninteractive apt update
 DEBIAN_FRONTEND=noninteractive apt upgrade -y
-DEBIAN_FRONTEND=noninteractive apt install -yq awscli docker.io jq sysstat
+DEBIAN_FRONTEND=noninteractive apt install -yq awscli docker.io jq sysstat nvme-cli
 
+# Enable Docker
 usermod -aG docker ubuntu
 newgrp docker
 sudo systemctl enable docker
 echo "### $(docker --version) ###"
 
-# Configure sysstat
+# Configure and enable Sysstat
 systemctl enable --now sysstat
 # use `-S XALL' to collect all available statistics.
 sed -i 's|SADC_OPTIONS=\"-S DISK\"|SADC_OPTIONS=\"-S XALL\"|' /etc/sysstat/sysstat
@@ -28,21 +29,21 @@ sed -i -e 's|10 minutes|1 minute|' -e 's|OnCalendar=\*:00/10|OnCalendar=\*:00/1|
 sed -i 's|sa1 1 1|sa1 1 60|' /usr/lib/systemd/system/sysstat-collect.service
 systemctl daemon-reload
 
-# Install efs-utils, if you use Amazon EFS as your cache
-echo '### Install efs-utils, if you use Amazon EFS as your cache ###'
-git clone https://github.com/aws/efs-utils
-cd efs-utils
-./build-deb.sh
-DEBIAN_FRONTEND=noninteractive apt install -yq ./build/amazon-efs-utils*deb
-cd ..
-rm -rf efs-utils
 
-# Install OpenZFS client, if you use FSx for OpenZFS as your cache
-echo '### Install OpenZFS client, if you use FSx for OpenZFS as your cache ###'
+# Install OpenZFS client, for benchmarking FSx for OpenZFS
+echo '### Install OpenZFS client, for benchmarking FSx for OpenZFS ###'
 DEBIAN_FRONTEND=noninteractive apt install -yq nfs-common
 
-# Build our Docker image
-echo '### Build our Docker image ###'
+
+# Install Mountpoint for Amazon S3, for benchmarking Amazon S3 Mountpoint
+echo '### Install Mountpoint for Amazon S3, for benchmarking Amazon S3 Mountpoint ###'
+wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.deb
+apt-get install -y ./mount-s3.deb
+rm -rf ./mount-s3.deb
+
+
+# Build our base Docker image to run the Yocto build
+echo '### Build our base Docker image to run the Yocto build ###'
 cat <<DOCKERFILE >> /home/ubuntu/Dockerfile
 FROM ubuntu:22.04
 
